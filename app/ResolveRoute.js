@@ -76,7 +76,7 @@ export default function resolveRoute(path)
     }
     let match = path.match(routeRegex.PostsIndex);
     if (match) {
-        return {page: 'PostsIndex', params: ['home', match[1]]};
+        return {page: 'PostsIndex', params: ['home', match[1], match[2]]};
     }
     match = path.match(routeRegex.UserProfile1) ||
         // @user/"posts" is deprecated in favor of "comments" as of oct-2016 (#443)

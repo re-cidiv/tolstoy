@@ -84,6 +84,7 @@ class Header extends React.Component {
         let user_name = null;
         let page_name = null;
         const feedList = [];
+        const extentedSortOrders = [];
         const { FEED_ONLY_REPOST, FEED_ONLY_POST, FEED } = constants.CATEGORIES;
 
         if (route.page === 'PostsIndex') {
@@ -156,7 +157,7 @@ class Header extends React.Component {
         const logo_link = route.params && route.params.length > 1 && this.last_sort_order ? '/' + this.last_sort_order : (current_account_name ? `/@${current_account_name}/feed` : '/');
         let topic_link = topic ? <Link to={`/${this.last_sort_order || 'hot'}/${topic_original_link}`}>{detransliterate(topic)}</Link> : null;
 
-        const sort_orders = [
+        let sort_orders = [
             ['created', tt('g.new')],
             ['hot', tt('main_menu.hot')],
             ['trending', tt('main_menu.trending')],
@@ -171,18 +172,25 @@ class Header extends React.Component {
             active: so[0] === sort_order,
           })
         );
+        let sort_order_menu_vertical = sort_orders.filter(so => so[0] !== sort_order).map(so => ({link: sortOrderToLink(so[0], topic_original_link, current_account_name), value: capitalizeFirstLetter(so[1])}));
 
         if (current_account_name) {
-          sort_orders.unshift(['home', tt('header_jsx.home')]);
-          [FEED, FEED_ONLY_POST, FEED_ONLY_REPOST].forEach((feedType) => feedList.push({
-            link: sortOrderToLink('home', topic_original_link, current_account_name, feedType),
-            onClick: () => {},
-            value: tt(`header_jsx.${feedType}_type`)
-          }))
+          [FEED, FEED_ONLY_POST, FEED_ONLY_REPOST].forEach(feedType => {
+            const localization = tt(`header_jsx.${feedType}_type`);
+
+            feedList.push({
+              link: sortOrderToLink('home', topic_original_link, current_account_name, feedType),
+              value: localization,
+            });
+
+            extentedSortOrders.push([feedType, localization]);
+          });
+
+          sort_orders = extentedSortOrders.concat(sort_orders);
+          sort_order_menu_vertical = feedList.concat(sort_order_menu_vertical);
         }
 
-        const sort_order_menu = sort_orders.filter(so => so[0] !== sort_order).map(so => ({link: sortOrderToLink(so[0], topic_original_link, current_account_name), value: capitalizeFirstLetter(so[1])}));
-        const selected_sort_order = sort_orders.find(so => so[0] === sort_order);
+        const selected_sort_order = sort_orders.find(so => !!route.params[2] ? so[0] === route.params[2] : so[0] === sort_order);
 
         // domestic
         DOMESTIC.all = tt('g.all_langs');
@@ -230,7 +238,7 @@ class Header extends React.Component {
                                 {user_name && <li><Link to={`/@${user_name}`}>@{user_name}</Link></li>}
                                 {page_name && <li><span>{page_name}</span></li>}
                                 {(topic_link || user_name || page_name) && sort_order && <li className="delim show-for-small-only">|</li>}
-                                {selected_sort_order && route && route.page !== 'Landing' && <DropdownMenu className="Header__sort-order-menu show-for-small-only" items={sort_order_menu} selected={selected_sort_order[1]} el="li" />}
+                                {selected_sort_order && route && route.page !== 'Landing' && <DropdownMenu className="Header__sort-order-menu show-for-small-only" items={sort_order_menu_vertical} selected={selected_sort_order[1]} el="li" />}
                             </ul>
                         </div>
                         <div className="columns shrink">
