@@ -137,28 +137,64 @@ export function* fetchState(location_change_action) {
 
                     case constants.CATEGORIES.FEED:
                         const feedEntries = yield call([api, api.getFeedEntriesAsync], uname, 0, 20)
-                        state.accounts[uname].feed = []
+                        state.accounts[uname][constants.CATEGORIES.FEED] = [];
 
                         for (let key in feedEntries) {
-                            const { author, permlink } = feedEntries[key]
-                            const link = `${author}/${permlink}`
-                            state.accounts[uname].feed.push(link)
-                            state.content[link] = yield call([api, api.getContentAsync], author, permlink)
+                            const { author, permlink } = feedEntries[key];
+                            const link = `${author}/${permlink}`;
+                            state.accounts[uname][constants.CATEGORIES.FEED].push(link);
+                            state.content[link] = yield call([api, api.getContentAsync], author, permlink);
 
-                            if (feedEntries[key].reblog_by.length > 0) {
-                                state.content[link].first_reblogged_by = feedEntries[key].reblog_by[0]
-                                state.content[link].reblogged_by = feedEntries[key].reblog_by
-                                state.content[link].first_reblogged_on = feedEntries[key].reblog_on
+                          if (feedEntries[key].reblog_by.length > 0) {
+                                state.content[link].first_reblogged_by = feedEntries[key].reblog_by[0];
+                                state.content[link].reblogged_by = feedEntries[key].reblog_by;
+                                state.content[link].first_reblogged_on = feedEntries[key].reblog_on;
                             }
                         }
                     break;
 
                   case constants.CATEGORIES.FEED_ONLY_POST:
                     // TODO make api call to get only posts
+                    const feedPostsEntries = yield call([api, api.getFeedEntriesAsync], uname, 0, 20);
+                    state.accounts[uname][constants.CATEGORIES.FEED_ONLY_POST] = [];
+
+                    for (const key in feedPostsEntries) {
+                      const { author, permlink } = feedPostsEntries[key];
+                      const link = `${author}/${permlink}`;
+
+                      if (feedPostsEntries[key].reblog_on === '1970-01-01T00:00:00') {
+                        state.accounts[uname][constants.CATEGORIES.FEED_ONLY_POST].push(link);
+                        state.content[link] = yield call([api, api.getContentAsync], author, permlink);
+
+                        if (feedPostsEntries[key].reblog_by.length > 0) {
+                          state.content[link].first_reblogged_by = feedPostsEntries[key].reblog_by[0];
+                          state.content[link].reblogged_by = feedPostsEntries[key].reblog_by;
+                          state.content[link].first_reblogged_on = feedPostsEntries[key].reblog_on;
+                        }
+                      }
+                    }
                     break;
 
                   case constants.CATEGORIES.FEED_ONLY_REPOST:
                     // TODO make api call to get only reposts
+                    const feedRepostsEntries = yield call([api, api.getFeedEntriesAsync], uname, 0, 20);
+                    state.accounts[uname][constants.CATEGORIES.FEED_ONLY_REPOST] = [];
+
+                    for (const key in feedRepostsEntries) {
+                      const { author, permlink } = feedRepostsEntries[key];
+                      const link = `${author}/${permlink}`;
+
+                      if (feedRepostsEntries[key].reblog_on !== '1970-01-01T00:00:00') {
+                        state.accounts[uname][constants.CATEGORIES.FEED_ONLY_REPOST].push(link);
+                        state.content[link] = yield call([api, api.getContentAsync], author, permlink);
+
+                        if (feedRepostsEntries[key].reblog_by.length > 0) {
+                          state.content[link].first_reblogged_by = feedRepostsEntries[key].reblog_by[0];
+                          state.content[link].reblogged_by = feedRepostsEntries[key].reblog_by;
+                          state.content[link].first_reblogged_on = feedRepostsEntries[key].reblog_on;
+                        }
+                      }
+                    }
                     break;
 
                     case 'blog':

@@ -190,7 +190,7 @@ class Header extends React.Component {
           sort_order_menu_vertical = feedList.concat(sort_order_menu_vertical);
         }
 
-        const selected_sort_order = sort_orders.find(so => !!route.params[2] ? so[0] === route.params[2] : so[0] === sort_order);
+        const selected_sort_order = sort_orders.find(so => route.params && route.params[2] ? so[0] === route.params[2] : so[0] === sort_order);
 
         // domestic
         DOMESTIC.all = tt('g.all_langs');
